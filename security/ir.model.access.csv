@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ticket_category,access.ticket.category,model_ticket_category,,1,1,1,1
+access_ticket_priority,access.ticket.priority,model_ticket_priority,,1,1,1,1
+access_ticket_state,access.ticket.state,model_ticket_state,,1,1,1,1
+access_ticket_user,access.ticket.user,model_res_users,,1,1,1,1
+access_support_ticket,access.support.ticket,model_support_ticket,,1,1,1,1
+access_settings,access.settings,model_support_settings,,1,1,1,1
+
+

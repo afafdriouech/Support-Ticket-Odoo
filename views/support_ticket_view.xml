@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="support_ticket_view_form" model="ir.ui.view">
+        <field name="name">support.ticket form view</field>
+        <field name="model">support.ticket</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="subject" class="oe_edit_only"/>
+                        <h1><field name="subject"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="ticket_number"/>
+                            <field name="priority_id"/>
+                            <field name="category_id"/>
+                            <field name="state_id"/>
+                        </group>
+                        <group>
+                            <field name="user_id" domain="[]"/>
+                            <!-- domain="[('share','=',False)]" -->
+                            <field name="person_name"/>
+                            <field name="email"/>
+                            <field name="support_rating" readonly="1"/>
+                            <field name="close_time"/>
+                            <field name="closed_by_id"/>
+                            <field name="support_comment" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" widget="html"/>
+                        </page>
+                        <page string="Attachments">
+                            <group>
+                                <field name="attachment_ids">
+                                    <tree>
+                                        <field name="datas_fname"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="support_ticket_view_tree" model="ir.ui.view">
+        <field name="name">support.ticket tree view</field>
+        <field name="model">support.ticket</field>
+        <field name="arch" type="xml">
+            <tree colors="black:ticket_color==False">
+                <field name="create_user_id" invisible="True"/>
+                <field name="ticket_color" invisible="True"/>
+                <field name="create_date"/>
+                <field name="ticket_number"/>
+                <field name="person_name"/>
+                <field name="category_id"/>
+                <field name="state_id"/>
+                <field name="subject"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="support_ticket_view_kanban" model="ir.ui.view">
+        <field name="name">support.ticket kanban view</field>
+        <field name="model">support.ticket</field>
+        <field name="arch" type="xml">
+            <kanban class="o_res_partner_kanban" default_group_by="state_id" create="false">
+                <field name="subject"/>
+                <field name="priority_id"/>
+                <field name="state_id"/>
+                <field name="category_id"/>
+                <field name="description"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_res_partner_kanban">
+                            <div class="o_kanban_tags_section oe_kanban_partner_categories"/>
+                            <div class="oe_kanban_details">
+                                <strong class="oe_partner_heading"><field name="subject"/></strong>
+                                <ul>
+                                    <li t-if="record.priority_id.raw_value"><field name="priority_id"/></li>
+                                    <li t-if="record.state_id.raw_value"><field name="state_id"/></li>
+                                    <li t-if="record.category_id.raw_value"><field name="category_id"/></li>
+                                    <li t-if="record.description.raw_value"><t t-raw="record.description.raw_value"/></li>
+                                </ul>
+                                <div class="oe_kanban_partner_links"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="support_ticket_view_graph" model="ir.ui.view">
+        <field name="name">support.ticket graph view</field>
+        <field name="model">support.ticket</field>
+        <field name="arch" type="xml">
+            <graph stacked="False">
+                <field name="create_date" interval="day" string="Create Date"/>
+            </graph>
+        </field>
+    </record>
+
+
+    <record id="website_support_ticket_view_search" model="ir.ui.view">
+        <field name="name">support.ticket search view</field>
+        <field name="model">support.ticket</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="ticket_number"/>
+                <field name="subject"/>
+                <!--filter string="Unattended Tickets" name="unattended_tickets" domain="[('unattended', '=', True )]" -->
+                <filter name="group_by_category" string="Category" domain="[]"  context="{'group_by':'category_id'}"/>
+                <filter name="group_by_user" string="User" domain="[]" context="{'group_by':'user_id'}" />
+            </search>
+        </field>
+    </record>
+
+     <record id="support_ticket_action" model="ir.actions.act_window">
+         <field name="name">Support Tickets</field>
+         <field name="res_model">support.ticket</field>
+         <field name="views_mode">tree,kanban,form,graph</field>
+         <!--field name="domain">[(1,'=',1)]</field>-->
+         <field name="help" type="html">
+            <p>
+                No Support Tickets found
+            </p>
+        </field>
+     </record>
+</odoo>
+
+         <!--field name="domain">['|',('user_id','=',False),('user_id','=',uid)]</field>-->
+         <!-- '|',('user_id','=',False),-->
