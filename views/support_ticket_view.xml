@@ -19,8 +19,7 @@
                             <field name="state_id"/>
                         </group>
                         <group>
-                            <field name="user_id" domain="[]"/>
-                            <!-- domain="[('share','=',False)]" -->
+                            <field name="user_id" domain="[('share','=',False)]"/>
                             <field name="person_name"/>
                             <field name="email"/>
                             <field name="support_rating" readonly="1"/>
@@ -49,23 +48,6 @@
                     <field name="message_ids" widget="mail_thread"/>
                 </div>
             </form>
-        </field>
-    </record>
-
-    <record id="support_ticket_view_tree" model="ir.ui.view">
-        <field name="name">support.ticket tree view</field>
-        <field name="model">support.ticket</field>
-        <field name="arch" type="xml">
-            <tree colors="black:ticket_color==False">
-                <field name="create_user_id" invisible="True"/>
-                <field name="ticket_color" invisible="True"/>
-                <field name="create_date"/>
-                <field name="ticket_number"/>
-                <field name="person_name"/>
-                <field name="category_id"/>
-                <field name="state_id"/>
-                <field name="subject"/>
-            </tree>
         </field>
     </record>
 
@@ -100,6 +82,23 @@
         </field>
     </record>
 
+    <record id="support_ticket_view_tree" model="ir.ui.view">
+        <field name="name">support.ticket tree view</field>
+        <field name="model">support.ticket</field>
+        <field name="arch" type="xml">
+            <tree colors="black:ticket_color==False">
+                <field name="create_user_id" invisible="True"/>
+                <field name="ticket_color" invisible="True"/>
+                <field name="create_date"/>
+                <field name="ticket_number"/>
+                <field name="person_name"/>
+                <field name="category_id"/>
+                <field name="state_id"/>
+                <field name="subject"/>
+            </tree>
+        </field>
+    </record>
+
     <record id="support_ticket_view_graph" model="ir.ui.view">
         <field name="name">support.ticket graph view</field>
         <field name="model">support.ticket</field>
@@ -128,7 +127,7 @@
      <record id="support_ticket_action" model="ir.actions.act_window">
          <field name="name">Support Tickets</field>
          <field name="res_model">support.ticket</field>
-         <field name="views_mode">tree,kanban,form,graph</field>
+         <field name="views_mode">kanban,tree,form,graph</field>
          <!--field name="domain">[(1,'=',1)]</field>-->
          <field name="help" type="html">
             <p>

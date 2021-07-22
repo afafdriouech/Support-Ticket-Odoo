@@ -52,17 +52,12 @@ class SupportTicket(models.Model):
     def _default_category_id(self):
         default_category = self.env['ticket.category'].search([('sequence','=','1')])
         return default_category[0]
-    #####################
-    def _default_user_id(self):
-        default_user = self.env['res.users'].search([('name','=','Mitchell Admin')])
-        #access_rights_uid=SUPERUSER_ID
-        return default_user[0]
 
     #channel = fields.Char(string="Channel", default="Manual")
     #afaf:check this
     create_user_id = fields.Many2one('res.users', "Create User")
     priority_id = fields.Many2one('ticket.priority', default=_default_priority_id, string="Priority")
-    user_id = fields.Many2one('res.users', string="Assigned User", default=_default_user_id)
+    user_id = fields.Many2one('res.users', string="Assigned User", track_visibility='onchange')
     person_name = fields.Char(string='Person Name')
     partner_id = fields.Many2one('res.partner', string="Partner")
     email = fields.Char(string="Email")
@@ -98,6 +93,12 @@ class SupportTicket(models.Model):
         self.person_name = self.partner_id.name
         self.email = self.partner_id.email
 
+    ################
+    @api.onchange('category_id')
+    def _onchange_user_id(self):
+        users = self.category_id.cat_user_ids.ids
+        return {'domain': {'user_id':[('id','in',users)]}}
+
     @api.model
     def message_new(self, msg, custom_values=None):
         """ Create new support ticket when receiving new email"""
@@ -115,13 +116,13 @@ class SupportTicket(models.Model):
             from_email = msg.get('from')
 
         defaults['email'] = from_email
-        defaults['channel'] = "Email"
+        #defaults['channel'] = "Email"
 
         #Try to find the partner using the from email
-        #search_partner = self.env['res.partner'].sudo().search([('email','=', from_email)])
-        #if len(search_partner) > 0:
-        #    defaults['partner_id'] = search_partner[0].id
-        #    defaults['person_name'] = search_partner[0].name
+        search_partner = self.env['res.partner'].sudo().search([('email','=', from_email)])
+        if len(search_partner) > 0:
+            defaults['partner_id'] = search_partner[0].id
+            defaults['person_name'] = search_partner[0].name
 
         defaults['description'] = tools.html_sanitize(msg.get('body'))
 
@@ -130,26 +131,25 @@ class SupportTicket(models.Model):
 
         #if setting_email_default_category_id:
         defaults['category_id'] = self._default_category_id(self)
-
         return super(SupportTicket, self).message_new(msg, custom_values=defaults)
 
-    def message_update(self, msg_dict, update_vals=None):
+    #def message_update(self, msg_dict, update_vals=None):
         """ Override to update the support ticket according to the email. """
 
-        body_short = tools.html_sanitize(msg_dict['body'])
+    #    body_short = tools.html_sanitize(msg_dict['body'])
 
         # If the to email address is to the customer then it must be a staff member
-        if msg_dict.get('to') == self.email:
-            change_state = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_staff_replied')
-        else:
-            change_state = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_customer_replied')
+    #    if msg_dict.get('to') == self.email:
+    #        change_state = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_staff_replied')
+    #    else:
+    #        change_state = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_customer_replied')
 
-        self.state_id = change_state.id
+    #    self.state_id = change_state.id
 
         # Add to message history to keep HTML clean
-        self.conversation_history_ids.create({'ticket_id': self.id, 'by': 'customer', 'content': body_short })
+    #    self.conversation_history_ids.create({'ticket_id': self.id, 'by': 'customer', 'content': body_short })
 
-        return super(SupportTicket, self).message_update(msg_dict, update_vals=update_vals)
+    #    return super(SupportTicket, self).message_update(msg_dict, update_vals=update_vals)
 
 class TicketCategory(models.Model):
 

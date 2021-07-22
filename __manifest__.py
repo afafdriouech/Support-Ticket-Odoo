@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','mail','resource','web','website'],
+    'depends': ['base','mail','resource','web','website','board'],
 
     # always loaded
     'data': [
@@ -32,6 +32,7 @@
         'views/ticket_state_view.xml',
         'views/users_view.xml',
         'views/support_ticket_view.xml',
+        'views/dashboard_view.xml',
         'views/website_templates.xml',
         'views/settings_view.xml',
         'views/menus.xml',
