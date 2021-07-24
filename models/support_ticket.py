@@ -80,6 +80,15 @@ class SupportTicket(models.Model):
     close_date = fields.Date(string="Close Date")
     closed_by_id = fields.Many2one('res.users', string="Closed By")
     time_to_close = fields.Integer(string="Time to close (seconds)")
+    #dashboard_id = fields.Many2one('ticket.dashboard')
+    #trick_id = fields.Char(default="sum")
+    ################
+    #urgent_open_nbr = fields.Integer(string="number",compute='get_urgent_nbr', store='true')
+
+    #@api.depends('priority_id')
+    #def get_urgent_nbr(self):
+        #for x in self:
+            #x.urgent_open_nbr = self.search_count([('priority_id','=',4),('state_id','=',1)])
 
     @api.model
     def create(self, vals):
@@ -227,3 +236,17 @@ class WebsiteSupportTicketClose(models.TransientModel):
     ticket_id = fields.Many2one('support.ticket', string="Ticket ID")
     message = fields.Html(string="Close Message", required=True)
     template_id = fields.Many2one('mail.template', string="Mail Template", domain="[('model_id','=','support.ticket'), ('built_in','=',False)]")
+
+class TicketDash(models.Model):
+
+    _name = "ticket.dashboard"
+
+    #ticket_ids = fields.One2many('support.ticket','dashboard_id',string="dashboard tickets")
+    urgent_open_nbr = fields.Integer(string="number",default="0", store='true')
+    #urgent_open_nbr = fields.Integer(string="number", track_visibility='onchange', default="0")
+    color = fields.Char(string="color index", default="#FF0000")
+    HP_nbr = fields.Integer(string="number hp",default="0", store='true')
+    #@api.multi
+    #def get_urgent_nbr(self):
+    #    for x in support_ticket.ticket_id:
+    #        self.urgent_open_nbr = x.search_count([('priority_id','=',4)])

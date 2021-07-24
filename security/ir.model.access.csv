@@ -5,5 +5,5 @@ access_ticket_state,access.ticket.state,model_ticket_state,,1,1,1,1
 access_ticket_user,access.ticket.user,model_res_users,,1,1,1,1
 access_support_ticket,access.support.ticket,model_support_ticket,,1,1,1,1
 access_settings,access.settings,model_support_settings,,1,1,1,1
-
+ticket_dashboard,ticket.dashboard,model_ticket_dashboard,,1,1,1,1
 
