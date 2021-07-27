@@ -10,12 +10,11 @@
 
             <!-- *************** child menu1 ****************-->
     <menuitem id="support_ticket_dashboard" name="Dashboard" parent="support_ticket_parent_menu"
-              action="ticket_dashboard_action" groups="base.group_user" sequence="10"/>
+              action="ticket_dashboard_action" groups="group_tickets_manager" sequence="10"/>
              <!-- *************** child menu2 ****************-->
     <menuitem id="support_ticket_menu" name="Tickets" parent="support_ticket_parent_menu"
               action="support_ticket_action" groups="base.group_user" sequence="20"/>
-    <!-- web_icon="website_support,static/description/icon.png" groups="support_staff" -->
-             <!-- *************** child menu3 **************** -->
+
 
     <menuitem id="support_config_parent_menu" name="Configuration"
               parent="support_ticket_parent_menu" groups="base.group_user" sequence="999"/>

@@ -26,7 +26,6 @@
     'data': [
         'views/views.xml',
         'views/templates.xml',
-        'views/customer_reply_template.xml',
         'views/ticket_category_view.xml',
         'views/ticket_priority_view.xml',
         'views/ticket_state_view.xml',
@@ -36,6 +35,7 @@
         'views/website_templates.xml',
         'views/settings_view.xml',
         'views/menus.xml',
+        'views/email_templates.xml',
         'security/security.xml',
         'security/ir.model.access.csv',
     ],

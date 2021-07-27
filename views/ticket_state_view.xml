@@ -9,8 +9,6 @@
                 <group>
                     <field name="name"/>
                     <field name="mail_template_id" />
-                    <!-- context="{'default_model':'website.support.ticket'}" -->
-                    <field name="unattended"/>
                 </group>
             </form>
         </field>
@@ -23,7 +21,6 @@
             <tree>
                 <field name="name"/>
                 <field name="mail_template_id" />
-               <!-- <field name="unattended"/>-->
             </tree>
         </field>
     </record>

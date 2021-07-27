@@ -23,7 +23,6 @@ class Portal(http.Controller):
 
     @http.route('/sav/acc/create/process', type="http", auth="public", website=True)
     def support_account_create_process(self, **kw):
-        """  Create no permission account"""
 
         values = {}
         for field_name, field_value in kw.items():
@@ -37,11 +36,7 @@ class Portal(http.Controller):
         #Remove all permissions
         new_user.groups_id = False
 
-            # Add the user to the support group
-        #support_group = request.env['ir.model.data'].sudo().get_object('website_support', 'support_group')
-        #support_group.users = [(4, new_user.id)]
-
-            # Also add them to the portal group so they can access the website
+            #add them to the portal group so they can access the website
         group_portal = request.env['ir.model.data'].sudo().get_object('base', 'group_portal')
         group_portal.users = [(4, new_user.id)]
 
@@ -49,7 +44,7 @@ class Portal(http.Controller):
         request.cr.commit()  # as authenticate will use its own cursor we need to commit the current transaction
         request.session.authenticate(request.env.cr.dbname, values['login'], values['password'])
 
-            # Redirect them to the support page
+            # Redirection to the support page
         return werkzeug.utils.redirect("")
 
     @http.route('/sav/ticket/submit', type="http", auth="public", website=True)
@@ -74,8 +69,6 @@ class Portal(http.Controller):
                                                                        'max_ticket_attachments')
         setting_max_ticket_attachment_filesize = request.env['ir.default'].get('support.settings',
                                                                                'max_ticket_attachment_filesize')
-        setting_allow_website_priority_set = request.env['ir.default'].get('support.settings',
-                                                                           'allow_website_priority_set')
 
         return http.request.render('ticket-module.support_submit_ticket', {'categories': ticket_categories,
                                                                              'priorities': http.request.env['ticket.priority'].sudo().search(
@@ -85,12 +78,11 @@ class Portal(http.Controller):
                                                                              'setting_max_ticket_attachment_filesize': setting_max_ticket_attachment_filesize,
                                                                              'setting_google_recaptcha_active': setting_google_recaptcha_active,
                                                                              'setting_google_captcha_client_key': setting_google_captcha_client_key,
-                                                                             #'setting_allow_website_priority_set': setting_allow_website_priority_set
                                                                         })
 
     @http.route('/sav/ticket/process', type="http", auth="public", website=True, csrf=True)
     def support_process_ticket(self, **kwargs):
-        """Adds the support ticket to the database and sends out emails to everyone following the support ticket category"""
+        """Adds the support ticket to the database and sends out email"""
         values = {}
         for field_name, field_value in kwargs.items():
             values[field_name] = field_value
@@ -146,7 +138,6 @@ class Portal(http.Controller):
                 create_dict['partner_id'] = search_partner[0].id
 
         new_ticket_id = request.env['support.ticket'].sudo().create(create_dict)
-
         if 'file' in values:
 
             for c_file in request.httprequest.files.getlist('file'):
@@ -169,7 +160,7 @@ class Portal(http.Controller):
 
     @http.route('/sav/ticket/view', type="http", auth="user", website=True)
     def support_ticket_view_list(self, **kw):
-        """Displays a list of support tickets owned by the logged in user"""
+        """Displays the list of support tickets owned by the current user"""
 
         values = {}
         for field_name, field_value in kw.items():
@@ -180,15 +171,6 @@ class Portal(http.Controller):
 
         # Can see own tickets
         ticket_access.append(http.request.env.user.partner_id.id)
-
-        # If the logged in user is a department manager then add all the contacts in the department to the access list
-        """
-                for dep in request.env['website.support.department.contact'].sudo().search(
-                [('user_id', '=', http.request.env.user.id)]):
-            for contact in dep.wsd_id.partner_ids:
-                ticket_access.append(contact.id)
-        """
-
         search_t = [('partner_id', 'in', ticket_access), ('partner_id', '!=', False)]
 
         if 'state' in values:
@@ -196,11 +178,9 @@ class Portal(http.Controller):
 
         support_tickets = request.env['support.ticket'].sudo().search(search_t)
 
-        #'no_approval_required = request.env['ir.model.data'].get_object('website_support', 'no_approval_required')
         change_requests = request.env['support.ticket'].sudo().search(
             [('partner_id', 'in', ticket_access), ('partner_id', '!=', False)])
-             #,('approval_id', '!=', no_approval_required.id)
-             #, order="planned_time desc"
+
         ticket_states = request.env['ticket.state'].sudo().search([])
 
         return request.render('ticket-module.support_ticket_view_list',
@@ -210,7 +190,7 @@ class Portal(http.Controller):
 
     @http.route('/sav/ticket/view/<ticket>', type="http", auth="user", website=True)
     def support_ticket_view(self, ticket):
-        """View an individual support ticket"""
+        """View a support ticket of the list of my tickets"""
 
         # Determine which tickets the logged in user can see
         ticket_access = []
@@ -218,20 +198,12 @@ class Portal(http.Controller):
         # Can see own tickets
         ticket_access.append(http.request.env.user.partner_id.id)
 
-        # If the logged in user is a department manager then add all the contacts in the department to the access list
-        """
-                for dep in request.env['website.support.department.contact'].sudo().search(
-                [('user_id', '=', http.request.env.user.id)]):
-            for contact in dep.wsd_id.partner_ids:
-                ticket_access.append(contact.id)
-
-        """
         setting_max_ticket_attachments = request.env['ir.default'].get('support.settings',
                                                                        'max_ticket_attachments')
         setting_max_ticket_attachment_filesize = request.env['ir.default'].get('support.settings',
                                                                                'max_ticket_attachment_filesize')
 
-        # Only let the user this ticket is assigned to view this ticket
+        # Only let the user this ticket is assigned to view it
         support_ticket = http.request.env['support.ticket'].sudo().search(
             [('partner_id', 'in', ticket_access), ('partner_id', '!=', False), ('id', '=', ticket)])[0]
         return http.request.render('ticket-module.support_ticket_view', {'support_ticket': support_ticket,

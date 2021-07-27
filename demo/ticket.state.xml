@@ -4,42 +4,22 @@
 
         <record id="website_ticket_state_open" model="ticket.state">
             <field name="name">New</field>
-            <!--field name="mail_template_id" ref="support_ticket_new"-->
-            <field name="unattended">True</field>
+            <field name="mail_template_id" ref="support_ticket_new"/>
         </record>
 
-        <record id="website_ticket_state_staff_replied" model="ticket.state">
-            <field name="name">Staff Replied</field>
+        <record id="website_ticket_state_in_progress" model="ticket.state">
+            <field name="name">In progress</field>
         </record>
 
-        <record id="website_ticket_state_customer_replied" model="ticket.state">
-            <field name="name">Customer Replied</field>
-            <field name="unattended">True</field>
+        <record id="website_ticket_state_solved" model="ticket.state">
+            <field name="name">Solved</field>
+            <field name="mail_template_id" ref="support_ticket_solved"/>
         </record>
 
-        <record id="website_ticket_state_awaiting_approval" model="ticket.state">
-            <field name="name">Awaiting Approval</field>
-        </record>
-
-        <record id="website_ticket_state_approval_accepted" model="ticket.state">
-            <field name="name">Approval Accepted</field>
-            <field name="unattended">True</field>
-        </record>
-
-        <record id="website_ticket_state_approval_rejected" model="ticket.state">
-            <field name="name">Approval Rejected</field>
-            <field name="unattended">True</field>
-        </record>
-
-        <record id="website_ticket_state_customer_closed" model="ticket.state">
-            <field name="name">Customer Closed</field>
+        <record id="website_ticket_state_closed" model="ticket.state">
+            <field name="name">Closed</field>
             <field name="mail_template_id" ref="support_ticket_closed"/>
         </record>
-
-        <!--<record id="website_ticket_state_staff_closed" model="ticket.state">
-            <field name="name">Staff Closed</field>
-            <field name="mail_template_id" ref="support_ticket_closed"/>
-        </record> -->
 
     </data>
 </odoo>

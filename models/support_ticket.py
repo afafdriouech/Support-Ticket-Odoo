@@ -21,27 +21,6 @@ class SupportTicket(models.Model):
     _translate = True
 
 
-    @api.model
-    def _read_group_state(self, states, domain, order):
-        """ Read group customization in order to display all the states in the
-            kanban view, even if they are empty
-        """
-
-        staff_replied_state = self.env['ir.model.data'].get_object('ticket-module',
-                                                                   'website_ticket_state_staff_replied')
-        customer_replied_state = self.env['ir.model.data'].get_object('ticket-module',
-                                                                      'website_ticket_state_customer_replied')
-        #customer_closed = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_customer_closed')
-        #staff_closed = self.env['ir.model.data'].get_object('ticket-module', 'website_ticket_state_staff_closed')
-
-        exclude_states = [staff_replied_state.id, customer_replied_state.id]
-        #, customer_closed.id, staff_closed.id]
-
-        # state_ids = states._search([('id','not in',exclude_states)], order=order, access_rights_uid=SUPERUSER_ID)
-        state_ids = states._search([], order=order, access_rights_uid=SUPERUSER_ID)
-
-        return states.browse(state_ids)
-
     def _default_state(self):
         return self.env['ir.model.data'].get_object('ticket-module', 'website_ticket_state_open')
 
@@ -53,8 +32,6 @@ class SupportTicket(models.Model):
         default_category = self.env['ticket.category'].search([('sequence','=','1')])
         return default_category[0]
 
-    #channel = fields.Char(string="Channel", default="Manual")
-    #afaf:check this
     create_user_id = fields.Many2one('res.users', "Create User")
     priority_id = fields.Many2one('ticket.priority', default=_default_priority_id, string="Priority")
     user_id = fields.Many2one('res.users', string="Assigned User", track_visibility='onchange')
@@ -65,7 +42,7 @@ class SupportTicket(models.Model):
     category_id = fields.Many2one('ticket.category', default=_default_category_id, string="Category", track_visibility='onchange')
     subject = fields.Char(string="Subject")
     description = fields.Text(string="Description")
-    state_id = fields.Many2one('ticket.state', group_expand='_read_group_state', default=_default_state,string="State")
+    state_id = fields.Many2one('ticket.state', default=_default_state,string="State", inverse='_inverse_state')
     conversation_history_ids = fields.One2many('support.ticket.message', 'ticket_id',
                                                string="Conversation History")
     attachment_ids = fields.One2many('ir.attachment', 'res_id', domain=[('res_model', '=', 'support.ticket')],
@@ -73,22 +50,12 @@ class SupportTicket(models.Model):
     portal_access_key = fields.Char(string="Portal Access Key")
     ticket_number = fields.Char(string="Ticket Number", readonly=True)
     ticket_color = fields.Char(related="priority_id.color", string="Ticket Color")
-    support_rating = fields.Integer(string="Support Rating")
     support_comment = fields.Text(string="Support Comment")
     close_comment = fields.Html(string="Close Comment")
     close_time = fields.Datetime(string="Close Time")
     close_date = fields.Date(string="Close Date")
     closed_by_id = fields.Many2one('res.users', string="Closed By")
     time_to_close = fields.Integer(string="Time to close (seconds)")
-    #dashboard_id = fields.Many2one('ticket.dashboard')
-    #trick_id = fields.Char(default="sum")
-    ################
-    #urgent_open_nbr = fields.Integer(string="number",compute='get_urgent_nbr', store='true')
-
-    #@api.depends('priority_id')
-    #def get_urgent_nbr(self):
-        #for x in self:
-            #x.urgent_open_nbr = self.search_count([('priority_id','=',4),('state_id','=',1)])
 
     @api.model
     def create(self, vals):
@@ -102,7 +69,6 @@ class SupportTicket(models.Model):
         self.person_name = self.partner_id.name
         self.email = self.partner_id.email
 
-    ################
     @api.onchange('category_id')
     def _onchange_user_id(self):
         users = self.category_id.cat_user_ids.ids
@@ -125,7 +91,7 @@ class SupportTicket(models.Model):
             from_email = msg.get('from')
 
         defaults['email'] = from_email
-        #defaults['channel'] = "Email"
+        defaults['channel'] = "Email"
 
         #Try to find the partner using the from email
         search_partner = self.env['res.partner'].sudo().search([('email','=', from_email)])
@@ -135,30 +101,19 @@ class SupportTicket(models.Model):
 
         defaults['description'] = tools.html_sanitize(msg.get('body'))
 
-        #Assign to default category
-        #setting_email_default_category_id = self.env['ir.default'].get('website.support.settings', 'email_default_category_id')
-
-        #if setting_email_default_category_id:
         defaults['category_id'] = self._default_category_id(self)
         return super(SupportTicket, self).message_new(msg, custom_values=defaults)
 
-    #def message_update(self, msg_dict, update_vals=None):
-        """ Override to update the support ticket according to the email. """
-
-    #    body_short = tools.html_sanitize(msg_dict['body'])
-
-        # If the to email address is to the customer then it must be a staff member
-    #    if msg_dict.get('to') == self.email:
-    #        change_state = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_staff_replied')
-    #    else:
-    #        change_state = self.env['ir.model.data'].get_object('ticket-module','website_ticket_state_customer_replied')
-
-    #    self.state_id = change_state.id
-
-        # Add to message history to keep HTML clean
-    #    self.conversation_history_ids.create({'ticket_id': self.id, 'by': 'customer', 'content': body_short })
-
-    #    return super(SupportTicket, self).message_update(msg_dict, update_vals=update_vals)
+    @api.multi
+    def _inverse_state(self):
+        if self.state_id.name == "Solved":
+            tmplt_id = self.env['mail.template'].search([("name","=","Support Ticket Solved")])
+            if tmplt_id:
+                self.env['mail.template'].browse(tmplt_id.id).send_mail(self.id, force_send=True)
+        elif self.state_id.name == "Cancelled":
+            tmplt_id = self.env['mail.template'].search([("name", "=", "Support Ticket Closed")])
+            if tmplt_id:
+                self.env['mail.template'].browse(tmplt_id.id).send_mail(self.id, force_send=True)
 
 class TicketCategory(models.Model):
 
@@ -197,7 +152,6 @@ class TicketState(models.Model):
 
     name = fields.Char(required=True, translate=True, string='State Name')
     mail_template_id = fields.Many2one('mail.template', string="Mail Template", domain = "[('model_id','=','support.ticket')]", help="The mail message that the customer gets when the state changes")
-    unattended = fields.Boolean(string="Unattended", help="If ticked, tickets in this state will appear by default")
 
 class SupportTicketUsers(models.Model):
 
@@ -237,16 +191,3 @@ class WebsiteSupportTicketClose(models.TransientModel):
     message = fields.Html(string="Close Message", required=True)
     template_id = fields.Many2one('mail.template', string="Mail Template", domain="[('model_id','=','support.ticket'), ('built_in','=',False)]")
 
-class TicketDash(models.Model):
-
-    _name = "ticket.dashboard"
-
-    #ticket_ids = fields.One2many('support.ticket','dashboard_id',string="dashboard tickets")
-    urgent_open_nbr = fields.Integer(string="number",default="0", store='true')
-    #urgent_open_nbr = fields.Integer(string="number", track_visibility='onchange', default="0")
-    color = fields.Char(string="color index", default="#FF0000")
-    HP_nbr = fields.Integer(string="number hp",default="0", store='true')
-    #@api.multi
-    #def get_urgent_nbr(self):
-    #    for x in support_ticket.ticket_id:
-    #        self.urgent_open_nbr = x.search_count([('priority_id','=',4)])

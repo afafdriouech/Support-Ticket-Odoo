@@ -120,7 +120,6 @@
             <search>
                 <field name="ticket_number"/>
                 <field name="subject"/>
-                <!--filter string="Unattended Tickets" name="unattended_tickets" domain="[('unattended', '=', True )]" -->
                 <filter name="group_by_category" string="Category" domain="[]"  context="{'group_by':'category_id'}"/>
                 <filter name="group_by_user" string="User" domain="[]" context="{'group_by':'user_id'}" />
             </search>
